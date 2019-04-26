@@ -9,13 +9,13 @@ class Config:
         config.BATCH_SIZE = 64
         config.TEST_BATCH_SIZE = 128
         config.READER_NUM_PARALLEL_BATCHES = 1
-        config.SHUFFLE_BUFFER_SIZE = 10000
+        config.SHUFFLE_BUFFER_SIZE = 1000
         config.CSV_BUFFER_SIZE = 100 * 1024 * 1024  # 100 MB
-        config.MAX_CONTEXTS = 200
+        config.MAX_CONTEXTS = 50
         config.SUBTOKENS_VOCAB_MAX_SIZE = 190000
         config.TARGET_VOCAB_MAX_SIZE = 27000
-        config.EMBEDDINGS_SIZE = 128*2
-        config.RNN_SIZE = 128*2  # Two LSTMs to embed paths, each of size 128
+        config.EMBEDDINGS_SIZE = 128
+        config.RNN_SIZE = 128  # Two LSTMs to embed paths, each of size 128
         config.DECODER_SIZE = 320
         config.NUM_DECODER_LAYERS = 1
         config.MAX_PATH_LENGTH = 8 + 1

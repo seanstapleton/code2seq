@@ -456,9 +456,12 @@ class Model:
         lengths = tf.multiply(tf.reshape(path_lengths, [-1]),
                               tf.cast(flat_valid_contexts_mask, tf.int32))  # (batch * max_contexts)
         if self.config.TRANSFORMER:
-            hparams_set = "transformer_base_v1"
+            hparams_set = "transformer_base_single_gpu"
             hparams = create_hparams(hparams_set)
             hparams.hidden_size = self.config.RNN_SIZE
+            hparams.eval_drop_long_sequences = True
+            hparams.batch_size = 128
+            hparams.max_length = 9
             transform_model = models.transformer.Transformer(hparams)
             targets = tf.roll(flat_paths, shift=-1, axis=1)
 
@@ -467,6 +470,10 @@ class Model:
                 "targets": tf.expand_dims(targets, 2),
                 "target_space_id": 3
             }
+
+            print('SHAPE!S:')
+            print(flat_paths.get_shape().as_list())
+            print(targets.get_shape().as_list())
 
             final_rnn_state = transform_model.body(features) 
         elif self.config.BIRNN:
