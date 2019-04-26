@@ -2,19 +2,20 @@ class Config:
     @staticmethod
     def get_default_config(args):
         config = Config(args)
+        config.TRANSFORMER = True
         config.NUM_EPOCHS = 3000
         config.SAVE_EVERY_EPOCHS = 1
         config.PATIENCE = 10
-        config.BATCH_SIZE = 512
-        config.TEST_BATCH_SIZE = 256
+        config.BATCH_SIZE = 64
+        config.TEST_BATCH_SIZE = 128
         config.READER_NUM_PARALLEL_BATCHES = 1
         config.SHUFFLE_BUFFER_SIZE = 10000
         config.CSV_BUFFER_SIZE = 100 * 1024 * 1024  # 100 MB
         config.MAX_CONTEXTS = 200
         config.SUBTOKENS_VOCAB_MAX_SIZE = 190000
         config.TARGET_VOCAB_MAX_SIZE = 27000
-        config.EMBEDDINGS_SIZE = 128
-        config.RNN_SIZE = 128 * 2  # Two LSTMs to embed paths, each of size 128
+        config.EMBEDDINGS_SIZE = 128*2
+        config.RNN_SIZE = 128*2  # Two LSTMs to embed paths, each of size 128
         config.DECODER_SIZE = 320
         config.NUM_DECODER_LAYERS = 1
         config.MAX_PATH_LENGTH = 8 + 1

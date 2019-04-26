@@ -9,6 +9,10 @@ import tensorflow as tf
 import reader
 from common import Common
 
+from tensor2tensor.utils import trainer_lib
+from tensor2tensor.utils.trainer_lib import create_run_config, create_experiment, create_hparams
+from tensor2tensor.utils import registry
+from tensor2tensor import models, problems
 
 class Model:
     topk = 10
@@ -451,7 +455,21 @@ class Model:
         flat_valid_contexts_mask = tf.reshape(valid_contexts_mask, [-1])  # (batch * max_contexts)
         lengths = tf.multiply(tf.reshape(path_lengths, [-1]),
                               tf.cast(flat_valid_contexts_mask, tf.int32))  # (batch * max_contexts)
-        if self.config.BIRNN:
+        if self.config.TRANSFORMER:
+            hparams_set = "transformer_base_v1"
+            hparams = create_hparams(hparams_set)
+            hparams.hidden_size = self.config.RNN_SIZE
+            transform_model = models.transformer.Transformer(hparams)
+            targets = tf.roll(flat_paths, shift=-1, axis=1)
+
+            features = {
+                "inputs": tf.expand_dims(flat_paths, 2),
+                "targets": tf.expand_dims(targets, 2),
+                "target_space_id": 3
+            }
+
+            final_rnn_state = transform_model.body(features) 
+        elif self.config.BIRNN:
             rnn_cell_fw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
             rnn_cell_bw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
             if not is_evaluating:
