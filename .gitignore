@@ -3,3 +3,16 @@
 .idea/*
 *.iml
 *.xml
+**.ipynb
+**__pycache__
+data/**
+java-small/**
+samples
+tutorials
+research
+recommendation
+mnist
+resnet
+benchmark
+boosted_trees
+keras_application_models

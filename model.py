@@ -8,7 +8,8 @@ import tensorflow as tf
 
 import reader
 from common import Common
-
+from official.transformer.model.transformer import Transformer
+from official.transformer.model.model_params import TINY_PARAMS
 
 class Model:
     topk = 10
@@ -446,12 +447,16 @@ class Model:
         # path_length:          (batch, max_contexts)
         # valid_contexts_mask:  (batch, max_contexts)
         max_contexts = tf.shape(path_embed)[1]
-        flat_paths = tf.reshape(path_embed, shape=[-1, self.config.MAX_PATH_LENGTH,
-                                                   self.config.EMBEDDINGS_SIZE])  # (batch * max_contexts, max_path_length+1, dim)
+        flat_paths = tf.reshape(path_embed, shape=[-1, self.config.MAX_PATH_LENGTH])  # (batch * max_contexts, max_path_length+1, dim)
         flat_valid_contexts_mask = tf.reshape(valid_contexts_mask, [-1])  # (batch * max_contexts)
         lengths = tf.multiply(tf.reshape(path_lengths, [-1]),
                               tf.cast(flat_valid_contexts_mask, tf.int32))  # (batch * max_contexts)
-        if self.config.BIRNN:
+        if self.config.TRANSFORMER:
+            params = TINY_PARAMS
+            params['hidden_size'] = self.config.RNN_SIZE
+            fwd = Transformer(TINY_PARAMS, not is_evaluating)
+            final_rnn_state = fwd(flat_paths)['scores']
+        elif self.config.BIRNN:
             rnn_cell_fw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
             rnn_cell_bw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
             if not is_evaluating:
@@ -487,8 +492,8 @@ class Model:
 
         source_word_embed = tf.nn.embedding_lookup(params=subtoken_vocab,
                                                    ids=source_input)  # (batch, max_contexts, max_name_parts, dim)
-        path_embed = tf.nn.embedding_lookup(params=nodes_vocab,
-                                            ids=nodes_input)  # (batch, max_contexts, max_path_length+1, dim)
+        # path_embed = tf.nn.embedding_lookup(params=nodes_vocab,
+        #                                     ids=nodes_input)  # (batch, max_contexts, max_path_length+1, dim)
         target_word_embed = tf.nn.embedding_lookup(params=subtoken_vocab,
                                                    ids=target_input)  # (batch, max_contexts, max_name_parts, dim)
 
@@ -501,7 +506,7 @@ class Model:
 
         source_words_sum = tf.reduce_sum(source_word_embed * source_word_mask,
                                          axis=2)  # (batch, max_contexts, dim)
-        path_nodes_aggregation = self.calculate_path_abstraction(path_embed, path_lengths, valid_mask,
+        path_nodes_aggregation = self.calculate_path_abstraction(nodes_input, path_lengths, valid_mask,
                                                                  is_evaluating)  # (batch, max_contexts, rnn_size)
         target_words_sum = tf.reduce_sum(target_word_embed * target_word_mask, axis=2)  # (batch, max_contexts, dim)
 

@@ -203,17 +203,17 @@ if __name__ == '__main__':
     class Config:
         def __init__(self):
             self.SAVE_EVERY_EPOCHS = 1
-            self.TRAIN_PATH = self.TEST_PATH = 'test_input/test_input'
-            self.BATCH_SIZE = 2
+            self.TRAIN_PATH = self.TEST_PATH = 'java-small/java-small'
+            self.BATCH_SIZE = 512
             self.TEST_BATCH_SIZE = self.BATCH_SIZE
             self.READER_NUM_PARALLEL_BATCHES = 1
             self.READING_BATCH_SIZE = 2
             self.SHUFFLE_BUFFER_SIZE = 100
-            self.MAX_CONTEXTS = 4
-            self.DATA_NUM_CONTEXTS = 4
-            self.MAX_PATH_LENGTH = 3
-            self.MAX_NAME_PARTS = 2
-            self.MAX_TARGET_PARTS = 4
+            self.MAX_CONTEXTS = 1000
+            self.DATA_NUM_CONTEXTS = 1000
+            self.MAX_PATH_LENGTH = 9
+            self.MAX_NAME_PARTS = 5
+            self.MAX_TARGET_PARTS = 6
             self.RANDOM_CONTEXTS = True
             self.CSV_BUFFER_SIZE = None
 
