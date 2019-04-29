@@ -13,6 +13,8 @@ from tensor2tensor.utils import trainer_lib
 from tensor2tensor.utils.trainer_lib import create_run_config, create_experiment, create_hparams
 from tensor2tensor.utils import registry
 from tensor2tensor import models, problems
+from tensor2tensor.models import transformer
+
 
 class Model:
     topk = 10
@@ -456,26 +458,22 @@ class Model:
         lengths = tf.multiply(tf.reshape(path_lengths, [-1]),
                               tf.cast(flat_valid_contexts_mask, tf.int32))  # (batch * max_contexts)
         if self.config.TRANSFORMER:
-            hparams_set = "transformer_base_single_gpu"
-            hparams = create_hparams(hparams_set)
+            hparams = transformer.transformer_base()
             hparams.hidden_size = self.config.RNN_SIZE
             hparams.eval_drop_long_sequences = True
             hparams.batch_size = 128
             hparams.max_length = 9
-            transform_model = models.transformer.Transformer(hparams)
-            targets = tf.roll(flat_paths, shift=-1, axis=1)
-
+            encoder = transformer.TransformerEncoder(hparams, mode=tf.estimator.ModeKeys.TRAIN)
             features = {
-                "inputs": tf.expand_dims(flat_paths, 2),
-                "targets": tf.expand_dims(targets, 2),
-                "target_space_id": 3
+                'inputs': tf.expand_dims(flat_paths, 2),
+                'targets': 0,
+                'target_space_id': 0,
             }
+            y = encoder(features)
+            final_rnn_state = tf.squeeze(y[0], axis=2)
+            final_rnn_state = tf.reduce_sum(final_rnn_state, axis=1)
+            final_rnn_state = tf.nn.softmax(final_rnn_state, axis=1)
 
-            print('SHAPE!S:')
-            print(flat_paths.get_shape().as_list())
-            print(targets.get_shape().as_list())
-
-            final_rnn_state = transform_model.body(features) 
         elif self.config.BIRNN:
             rnn_cell_fw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
             rnn_cell_bw = tf.nn.rnn_cell.LSTMCell(self.config.RNN_SIZE / 2)
